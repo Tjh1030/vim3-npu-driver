@@ -33,7 +33,7 @@ jobs:
         ./scripts/config --enable CONFIG_MODULES
         ./scripts/config --enable CONFIG_MODULE_UNLOAD
         ./scripts/config --enable CONFIG_PREEMPT
-        
+
         make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- olddefconfig
         make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- modules_prepare
 
@@ -42,24 +42,29 @@ jobs:
         cd linux-5.15.158
         git clone -b khadas-vims-5.15.y https://github.com/khadas/common_drivers.git common_drivers
 
-    - name: Patch Driver Source Code for Kernel 5.15 & GCC
+    - name: Patch Driver Source Code for Kernel 5.15, GCC & DTB Matching
       run: |
         cd linux-5.15.158/common_drivers/drivers/npu
         
-        # 1. 修复 strtoint_from_user API 变动
+        # 1. 注入 "vivante,gc" 兼容性字符串，使驱动支持原生设备树匹配
+        echo "===> Injecting 'vivante,gc' compatible string for DTB matching..."
+        find . -type f \( -name "*.c" -o -name "*.h" \) -exec sed -i 's/"amlogic, npu"/"vivante,gc", "amlogic, npu"/g' {} +
+        grep -rn "vivante,gc" . || true
+
+        # 2. 修复 strtoint_from_user API 变动
         sed -i 's/strtoint_from_user(\([^,]*\),\s*\([^,]*\),\s*\([^)]*\))/kstrtoint_from_user(\1, \2, 10, \3)/g' hal/os/linux/kernel/gc_hal_kernel_device.c
         
-        # 2. 修复 _QuerySignal 返回类型不一致问题
+        # 3. 修复 _QuerySignal 返回类型不一致问题
         sed -i 's/gctBOOL/gceSTATUS/g' hal/os/linux/kernel/gc_hal_kernel_linux.h
         
-        # 3. 移除驱动内部 Makefile 里的 -Werror
+        # 4. 移除驱动内部 Makefile 里的 -Werror
         find . -name "Kbuild" -o -name "Makefile*" | xargs sed -i 's/-Werror//g'
         
-        # 4. 解决 AQROOT 与 drivers/npu 相对路径依赖的双重逻辑
+        # 5. 解决 AQROOT 与 drivers/npu 相对路径依赖的双重逻辑
         mkdir -p drivers
         ln -s .. drivers/npu
         
-        # 5. 强制将头文件路径写入 Kbuild 文件的 ccflags-y
+        # 6. 强制将头文件路径写入 Kbuild 文件的 ccflags-y
         NPU_ABS="$(pwd)"
         echo "ccflags-y += -I$NPU_ABS/hal/inc -I$NPU_ABS/hal/os/linux/kernel -I$NPU_ABS/hal/user -I$NPU_ABS/hal/arch/XAQ2 -Wno-error -Wno-enum-int-mismatch -Wno-unused-function" >> Kbuild
 
