@@ -41,17 +41,24 @@ jobs:
         # 1. 修复 strtoint_from_user API 变动
         sed -i 's/strtoint_from_user/kstrtoint_from_user/g' hal/os/linux/kernel/gc_hal_kernel_device.c
         
-        # 2. 修复 _QuerySignal 返回类型不一致问题 (gctBOOL -> gceSTATUS)
+        # 2. 修复 _QuerySignal 返回类型不一致问题
         sed -i 's/gctBOOL/gceSTATUS/g' hal/os/linux/kernel/gc_hal_kernel_linux.h
         
-        # 3. 移除驱动 Makefile 里的 -Werror，防止新 GCC 报警阻断编译
+        # 3. 移除驱动内部 Makefile 里的 -Werror
         find . -name "Kbuild" -o -name "Makefile*" | xargs sed -i 's/-Werror//g'
 
     - name: Build galcore.ko
       run: |
         cd linux-5.15.158
+        # 获取 NPU 驱动的绝对路径，注入所有的包含目录 (-I)
+        NPU_ROOT="$(pwd)/common_drivers/drivers/npu"
+        
         make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
-          EXTRA_CFLAGS="-Wno-error -Wno-enum-int-mismatch -Wno-unused-function" \
+          EXTRA_CFLAGS="-Wno-error -Wno-enum-int-mismatch -Wno-unused-function \
+            -I$NPU_ROOT/hal/inc \
+            -I$NPU_ROOT/hal/os/linux/kernel \
+            -I$NPU_ROOT/hal/user \
+            -I$NPU_ROOT/hal/arch/XAQ2" \
           M=common_drivers/drivers/npu \
           CONFIG_AMLOGIC_NPU=m \
           CONFIG_AMLOGIC_DRIVER_BUILD_CONFIG=y \
