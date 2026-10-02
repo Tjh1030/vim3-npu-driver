@@ -34,7 +34,9 @@ jobs:
         ./scripts/config --enable CONFIG_MODULE_UNLOAD
         ./scripts/config --enable CONFIG_PREEMPT
 
+        # 3. 补全内核配置与内核头文件/符号预处理
         make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- olddefconfig
+        make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- prepare
         make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- modules_prepare
 
     - name: Clone Khadas NPU Driver Source
@@ -46,9 +48,8 @@ jobs:
       run: |
         cd linux-5.15.158/common_drivers/drivers/npu
         
-        # 1. 注入 "vivante,gc" 兼容性字符串，使驱动支持原生设备树匹配
+        # 1. 精准注入 "vivante,gc" 兼容性字符串，使驱动支持原生设备树匹配
         echo "===> Injecting 'vivante,gc' compatible string for DTB matching..."
-
         find . -type f \( -name "*.c" -o -name "*.h" \) -exec sed -i 's/"amlogic, galcore"/"vivante,gc", "amlogic, galcore"/g' {} +
         grep -rn "vivante,gc" . || true
         
@@ -81,6 +82,7 @@ jobs:
           CONFIG_AMLOGIC_NPU=m \
           CONFIG_AMLOGIC_DRIVER_BUILD_CONFIG=y \
           CONFIG_AMLOGIC_NPU_VIP9000=y \
+          KBUILD_MODPOST_WARN=1 \
           modules -j$(nproc)
 
     - name: Upload galcore.ko Artifact
