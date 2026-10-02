@@ -31,19 +31,21 @@ jobs:
 
     - name: Clone Khadas NPU Driver Source
       run: |
-        cd linux-5.15.158/drivers
+        cd linux-5.15.158
+        # 直接拉取到内核源码根目录下的 common_drivers
         git clone -b khadas-vims-5.15.y https://github.com/khadas/common_drivers.git common_drivers
-        # 创建软链接，解决 Kbuild 相对路径找不到 config 的问题
-        cd common_drivers/drivers/npu
-        ln -s ../../../common_drivers common_drivers
 
     - name: Build galcore.ko
       run: |
         cd linux-5.15.158
-        make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- M=drivers/common_drivers/drivers/npu CONFIG_AMLOGIC_NPU=m modules -j$(nproc)
+        make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
+          M=common_drivers/drivers/npu \
+          CONFIG_AMLOGIC_NPU=m \
+          CONFIG_AMLOGIC_DRIVER_BUILD_CONFIG=y \
+          modules -j$(nproc)
 
     - name: Upload galcore.ko Artifact
       uses: actions/upload-artifact@v4
       with:
         name: galcore-driver
-        path: linux-5.15.158/drivers/common_drivers/drivers/npu/galcore.ko
+        path: linux-5.15.158/common_drivers/drivers/npu/galcore.ko
