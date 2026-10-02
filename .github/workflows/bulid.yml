@@ -32,15 +32,15 @@ jobs:
     - name: Clone Khadas NPU Driver Source
       run: |
         cd linux-5.15.158/drivers
-        git clone -b khadas-vims-5.15.y https://github.com/khadas/common_drivers.git npu_driver
+        git clone -b khadas-vims-5.15.y https://github.com/khadas/common_drivers.git common_drivers
 
     - name: Build galcore.ko
       run: |
         cd linux-5.15.158
-        make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- M=drivers/npu_driver/drivers/npu CONFIG_AMLOGIC_NPU=m modules -j$(nproc)
+        make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- M=drivers/common_drivers/drivers/npu CONFIG_AMLOGIC_NPU=m modules -j$(nproc)
 
     - name: Upload galcore.ko Artifact
       uses: actions/upload-artifact@v4
       with:
         name: galcore-driver
-        path: linux-5.15.158/drivers/npu_driver/drivers/npu/galcore.ko
+        path: linux-5.15.158/drivers/common_drivers/drivers/npu/galcore.ko
