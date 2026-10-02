@@ -33,6 +33,9 @@ jobs:
       run: |
         cd linux-5.15.158/drivers
         git clone -b khadas-vims-5.15.y https://github.com/khadas/common_drivers.git common_drivers
+        # 创建软链接，解决 Kbuild 相对路径找不到 config 的问题
+        cd common_drivers/drivers/npu
+        ln -s ../../../common_drivers common_drivers
 
     - name: Build galcore.ko
       run: |
