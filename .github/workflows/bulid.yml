@@ -52,9 +52,15 @@ jobs:
         cd linux-5.15.158
         NPU_ROOT="$(pwd)/common_drivers/drivers/npu"
         
+        # 通过 ccflags-y 注入完整头文件路径及参数
         make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
-          AQROOT="$NPU_ROOT" \
-          EXTRA_CFLAGS="-Wno-error -Wno-enum-int-mismatch -Wno-unused-function" \
+          AQROOT="$(pwd)/common_drivers" \
+          ccflags-y="-Wno-error -Wno-enum-int-mismatch -Wno-unused-function \
+            -I$NPU_ROOT \
+            -I$NPU_ROOT/hal/inc \
+            -I$NPU_ROOT/hal/os/linux/kernel \
+            -I$NPU_ROOT/hal/user \
+            -I$NPU_ROOT/hal/arch/XAQ2" \
           M=common_drivers/drivers/npu \
           CONFIG_AMLOGIC_NPU=m \
           CONFIG_AMLOGIC_DRIVER_BUILD_CONFIG=y \
