@@ -24,8 +24,8 @@ jobs:
     - name: Restore Config and Prepare Kernel
       run: |
         cd linux-5.15.158
-        # 将你的内核 .config 放入此处
         echo "${{ secrets.KERNEL_CONFIG }}" > .config
+        ./scripts/config --enable CONFIG_MODULES
         make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- olddefconfig
         make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- prepare
 
