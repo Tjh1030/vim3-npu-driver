@@ -48,9 +48,10 @@ jobs:
         
         # 1. 注入 "vivante,gc" 兼容性字符串，使驱动支持原生设备树匹配
         echo "===> Injecting 'vivante,gc' compatible string for DTB matching..."
-        find . -type f \( -name "*.c" -o -name "*.h" \) -exec sed -i 's/"amlogic, npu"/"vivante,gc", "amlogic, npu"/g' {} +
-        grep -rn "vivante,gc" . || true
 
+        find . -type f \( -name "*.c" -o -name "*.h" \) -exec sed -i 's/"amlogic, galcore"/"vivante,gc", "amlogic, galcore"/g' {} +
+        grep -rn "vivante,gc" . || true
+        
         # 2. 修复 strtoint_from_user API 变动
         sed -i 's/strtoint_from_user(\([^,]*\),\s*\([^,]*\),\s*\([^)]*\))/kstrtoint_from_user(\1, \2, 10, \3)/g' hal/os/linux/kernel/gc_hal_kernel_device.c
         
