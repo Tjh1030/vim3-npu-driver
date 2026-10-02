@@ -32,7 +32,7 @@ jobs:
     - name: Clone Khadas NPU Driver Source
       run: |
         cd linux-5.15.158/drivers
-        git clone -b khadas-vims-5.15.y https://github.com/khadas/common_drivers.y.git npu_driver
+        git clone -b khadas-vims-5.15.y https://github.com/khadas/common_drivers.git npu_driver
 
     - name: Build galcore.ko
       run: |
