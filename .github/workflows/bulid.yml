@@ -27,7 +27,8 @@ jobs:
         echo "${{ secrets.KERNEL_CONFIG }}" > .config
         ./scripts/config --enable CONFIG_MODULES
         make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- olddefconfig
-        make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- prepare
+        # 必须使用 modules_prepare 生成 scripts/module.lds
+        make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- modules_prepare
 
     - name: Clone Khadas NPU Driver Source
       run: |
