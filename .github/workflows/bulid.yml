@@ -50,6 +50,10 @@ jobs:
         # 4. 解决 AQROOT 与 drivers/npu 相对路径依赖的双重逻辑
         mkdir -p drivers
         ln -s .. drivers/npu
+        
+        # 5. 直接强制将头文件路径写入 Kbuild 文件的 ccflags-y，彻底解决 gc_hal.h 找不到的问题
+        NPU_ABS="$(pwd)"
+        echo "ccflags-y += -I$NPU_ABS/hal/inc -I$NPU_ABS/hal/os/linux/kernel -I$NPU_ABS/hal/user -I$NPU_ABS/hal/arch/XAQ2 -Wno-error -Wno-enum-int-mismatch -Wno-unused-function" >> Kbuild
 
     - name: Build galcore.ko
       run: |
@@ -58,7 +62,7 @@ jobs:
         
         make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
           AQROOT="$NPU_ROOT" \
-          ccflags-y="-Wno-error -Wno-enum-int-mismatch -Wno-unused-function" \
+          GCDRV_DIR_LINUX="$NPU_ROOT/hal/os/linux/kernel" \
           M=common_drivers/drivers/npu \
           CONFIG_AMLOGIC_NPU=m \
           CONFIG_AMLOGIC_DRIVER_BUILD_CONFIG=y \
