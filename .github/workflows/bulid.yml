@@ -29,8 +29,9 @@ jobs:
         # 1. 匹配 flippy 内核的版本号后缀
         sed -i 's/^EXTRAVERSION =.*/EXTRAVERSION = -flippy-89+o/' Makefile
         
-        # 2. 确保开启模块及抢占内核配置以完全对齐 vermagic
+        # 2. 对齐 vermagic 必须的所有内核选项 (MODULES, UNLOAD, PREEMPT)
         ./scripts/config --enable CONFIG_MODULES
+        ./scripts/config --enable CONFIG_MODULE_UNLOAD
         ./scripts/config --enable CONFIG_PREEMPT
         
         make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- olddefconfig
