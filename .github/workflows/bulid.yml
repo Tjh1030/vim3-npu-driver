@@ -50,15 +50,11 @@ jobs:
     - name: Build galcore.ko
       run: |
         cd linux-5.15.158
-        # 获取 NPU 驱动的绝对路径，注入所有的包含目录 (-I)
         NPU_ROOT="$(pwd)/common_drivers/drivers/npu"
         
         make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
-          EXTRA_CFLAGS="-Wno-error -Wno-enum-int-mismatch -Wno-unused-function \
-            -I$NPU_ROOT/hal/inc \
-            -I$NPU_ROOT/hal/os/linux/kernel \
-            -I$NPU_ROOT/hal/user \
-            -I$NPU_ROOT/hal/arch/XAQ2" \
+          AQROOT="$NPU_ROOT" \
+          EXTRA_CFLAGS="-Wno-error -Wno-enum-int-mismatch -Wno-unused-function" \
           M=common_drivers/drivers/npu \
           CONFIG_AMLOGIC_NPU=m \
           CONFIG_AMLOGIC_DRIVER_BUILD_CONFIG=y \
