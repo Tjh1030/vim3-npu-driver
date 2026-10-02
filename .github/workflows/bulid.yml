@@ -38,8 +38,8 @@ jobs:
       run: |
         cd linux-5.15.158/common_drivers/drivers/npu
         
-        # 1. 修复 strtoint_from_user API 变动
-        sed -i 's/strtoint_from_user/kstrtoint_from_user/g' hal/os/linux/kernel/gc_hal_kernel_device.c
+        # 1. 修复 strtoint_from_user API 变动（补充 10 进制参数 base）
+        sed -i 's/strtoint_from_user(\([^,]*\),\s*\([^,]*\),\s*\([^)]*\))/kstrtoint_from_user(\1, \2, 10, \3)/g' hal/os/linux/kernel/gc_hal_kernel_device.c
         
         # 2. 修复 _QuerySignal 返回类型不一致问题
         sed -i 's/gctBOOL/gceSTATUS/g' hal/os/linux/kernel/gc_hal_kernel_linux.h
@@ -51,7 +51,7 @@ jobs:
         mkdir -p drivers
         ln -s .. drivers/npu
         
-        # 5. 直接强制将头文件路径写入 Kbuild 文件的 ccflags-y，彻底解决 gc_hal.h 找不到的问题
+        # 5. 强制将头文件路径写入 Kbuild 文件的 ccflags-y
         NPU_ABS="$(pwd)"
         echo "ccflags-y += -I$NPU_ABS/hal/inc -I$NPU_ABS/hal/os/linux/kernel -I$NPU_ABS/hal/user -I$NPU_ABS/hal/arch/XAQ2 -Wno-error -Wno-enum-int-mismatch -Wno-unused-function" >> Kbuild
 
