@@ -1,7 +1,7 @@
 name: Build VIP9000 Galcore Kernel Module
 
 on:
-  workflow_dispatch: # 支持在 GitHub 页面手动点击触发编译
+  workflow_dispatch:
 
 jobs:
   build:
@@ -32,7 +32,6 @@ jobs:
     - name: Clone Khadas NPU Driver Source
       run: |
         cd linux-5.15.158
-        # 直接拉取到内核源码根目录下的 common_drivers
         git clone -b khadas-vims-5.15.y https://github.com/khadas/common_drivers.git common_drivers
 
     - name: Build galcore.ko
@@ -42,6 +41,7 @@ jobs:
           M=common_drivers/drivers/npu \
           CONFIG_AMLOGIC_NPU=m \
           CONFIG_AMLOGIC_DRIVER_BUILD_CONFIG=y \
+          CONFIG_AMLOGIC_NPU_VIP9000=y \
           modules -j$(nproc)
 
     - name: Upload galcore.ko Artifact
